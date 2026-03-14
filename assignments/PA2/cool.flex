@@ -47,6 +47,8 @@ int comment_level = 0;
 
 %}
 
+%option noyywrap
+
 /*
  * Define names for regular expressions here.
  */
