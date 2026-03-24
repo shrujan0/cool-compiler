@@ -1,0 +1,40 @@
+name: Mirror to Codeberg
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["*"]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    if: github.repository == 'shrujan0/cool-compiler'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CODEBERG_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan codeberg.org >> ~/.ssh/known_hosts
+
+      - name: Add Codeberg remote
+        shell: bash
+        run: |
+          git remote add codeberg "${{ secrets.CODEBERG_REPO_SSH }}"
+
+      - name: Mirror branches
+        shell: bash
+        run: |
+          git push codeberg --all --force
+
+      - name: Mirror tags
+        shell: bash
+        run: |
+          git push codeberg --tags --force
